@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadScutum | Consulta de PEPs & Compliance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .tab-active {
+      background-color: rgb(79 70 229);
+      color: white;
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen antialiased">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-lg shadow-lg shadow-indigo-500/20">
+          <i class="ph-bold ph-shield-check"></i>
+        </div>
+        <div>
+          <span class="font-bold text-white text-sm tracking-wide">LEAD<span class="text-indigo-400">SCUTUM</span></span>
+          <span class="text-xs text-slate-400 block -mt-1">PEPs & QSA Analytics</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- Top Navigation / Tabs -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div>
+        <h1 class="text-2xl font-bold text-white tracking-tight">Motor Analítico de Risco & Compliance</h1>
+        <p class="text-slate-400 text-sm mt-1">Consulta via bases públicas da CGU e Receita Federal em segundos.</p>
+      </div>
+
+      <!-- Abas de Navegação -->
+      <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/80 text-xs">
+        <button id="tabBtnConsulta" onclick="trocarAba('consulta')" class="tab-active px-4 py-2 font-semibold rounded-lg transition flex items-center gap-2">
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <span>Consulta Direta</span>
+        </button>
+        <button id="tabBtnLead" onclick="trocarAba('lead')" class="text-slate-400 hover:text-white px-4 py-2 font-medium rounded-lg transition flex items-center gap-2">
+          <i class="ph-bold ph-paper-plane-tilt"></i>
+          <span>Esteira de Leads</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 1: CONSULTA DIRETA (SOMENTE NOME, CNPJ OU CPF) -->
+    <section id="abaConsulta" class="space-y-6">
+      
+      <!-- Seletor de Tipo e Cenários Rápidos -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/40 border border-slate-800 p-3 rounded-2xl">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-semibold text-slate-400 mr-2">Consultar por:</span>
+          <button type="button" onclick="setConsultaTipo('auto')" id="tipoBtn_auto" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white transition">
+            ⚡ Automático
+          </button>
+          <button type="button" onclick="setConsultaTipo('nome')" id="tipoBtn_nome" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+            🔤 Somente Nome
+          </button>
+          <button type="button" onclick="setConsultaTipo('cpf')" id="tipoBtn_cpf" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+            🪪 Somente CPF
+          </button>
+          <button type="button" onclick="setConsultaTipo('cnpj')" id="tipoBtn_cnpj" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+            🏢 Somente CNPJ
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+          <span class="text-slate-500 text-[11px] mr-1">Exemplos:</span>
+          <button onclick="preencherConsulta('nome', 'Celso Fioreze')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
+            Nome PEP (Celso)
+          </button>
+          <button onclick="preencherConsulta('nome', 'Lula')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition">
+            Nome PEP (Lula)
+          </button>
+          <button onclick="preencherConsulta('cpf', '000.288.810-00')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition font-mono">
+            CPF PEP
+          </button>
+          <button onclick="preencherConsulta('cnpj', '64.085.296/0001-00')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700 transition font-mono">
+            CNPJ com Sócio PEP
+          </button>
+          <button onclick="preencherConsulta('cnpj', '55.107.392/0001-00')" class="px-2 py-1 rounded bg-slate-800 hover:bg-emerald-950/40 text-slate-300 hover:text-emerald-300 border border-slate-700 transition font-mono">
+            CNPJ Limpo
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Busca -->
+      <form onsubmit="executarConsulta(event)" class="relative flex items-center">
+        <div class="absolute left-4 text-slate-400 text-lg flex items-center pointer-events-none">
+          <i id="inputIcon" class="ph ph-magnifying-glass"></i>
+        </div>
+        <input type="text" id="termoConsulta" required
+          placeholder="Digite o Nome, CPF ou CNPJ para consulta direta..."
+          oninput="formatarTermo(this)"
+          class="w-full bg-slate-800/60 border border-slate-700 rounded-2xl pl-12 pr-36 py-4 text-base text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-xl transition">
+        <button type="submit" id="btnConsultar"
+          class="absolute right-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+          <span>Consultar</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Painel de Resultados da Consulta -->
+      <div id="resultadoConsulta" class="hidden">
+        <!-- Renderizado dinamicamente via JavaScript -->
+      </div>
+
+    </section>
+
+
+    <!-- SEÇÃO 2: ESTEIRA COMPLETA DE LEADS -->
+    <section id="abaLead" class="hidden space-y-8">
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-white">Subscrição & Despacho de Leads</h2>
+          <p class="text-slate-400 text-xs mt-0.5">Cadastre a proposta. A esteira envia automaticamente para Comercial ou Jurídico.</p>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 p-1 rounded-xl">
+          <span class="text-xs font-semibold text-slate-400 px-2">Cenários:</span>
+          <button onclick="preencherCenarioLead('limpo')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-700 text-slate-200 hover:bg-emerald-600 hover:text-white transition">
+            Lead Limpo
+          </button>
+          <button onclick="preencherCenarioLead('pep')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-700 text-slate-200 hover:bg-rose-600 hover:text-white transition">
+            Lead PEP / QSA
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-7 bg-slate-800/50 border border-slate-700/70 rounded-2xl p-6 sm:p-8 backdrop-blur shadow-xl">
+          <h3 class="text-base font-semibold text-white mb-6 flex items-center gap-2">
+            <i class="ph ph-identification-card text-indigo-400"></i> Informações do Lead
+          </h3>
+
+          <form id="leadForm" onsubmit="enviarLead(event)" class="space-y-5">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">Nome Completo / Razão Social (Opcional se tiver doc)</label>
+              <input type="text" id="nome" placeholder="Ex: Celso Fioreze ou Razão Social"
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">CPF ou CNPJ (Opcional se tiver nome)</label>
+                <input type="text" id="documento" placeholder="000.000.000-00 ou CNPJ" maxlength="18" oninput="mascaraDoc(this)"
+                  class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition font-mono">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1.5">Volume Estimado (R$)</label>
+                <input type="number" id="valor" placeholder="100000" min="0" step="1000"
+                  class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1.5">E-mail de Contato</label>
+              <input type="email" id="email" placeholder="contato@empresa.com.br"
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+
+            <button type="submit" id="btnSubmitLead"
+              class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/25">
+              <span>Disparar Análise Regulatória</span>
+              <i class="ph-bold ph-arrow-right"></i>
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-5 space-y-6">
+          <div id="statusCardLead" class="bg-slate-800/40 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 transition-all">
+            <div class="h-12 w-12 rounded-full bg-slate-800 mx-auto flex items-center justify-center text-slate-400 mb-3 text-xl">
+              <i class="ph ph-hourglass-simple"></i>
+            </div>
+            <h4 class="text-sm font-semibold text-slate-300">Aguardando Entrada</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Preencha ao menos o Nome ou o Documento (CPF/CNPJ) para executar a esteira regulatória.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TRILHA DE AUDITORIA (LOGS SQLITE) -->
+    <section class="bg-slate-800/50 border border-slate-700/70 rounded-2xl p-6 backdrop-blur">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-base font-semibold text-white">Trilha de Auditoria</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Histórico persistido com data/hora e decisões tomadas pela esteira.</p>
+        </div>
+        <button onclick="carregarLeads()" title="Atualizar Logs" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition">
+          <i class="ph ph-arrow-clockwise text-base"></i>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-slate-700 text-slate-400">
+              <th class="py-3 px-4">ID</th>
+              <th class="py-3 px-4">Nome / Termo</th>
+              <th class="py-3 px-4">Tipo</th>
+              <th class="py-3 px-4">Documento</th>
+              <th class="py-3 px-4">Volume</th>
+              <th class="py-3 px-4">Status Risco</th>
+              <th class="py-3 px-4">Encaminhado Para</th>
+              <th class="py-3 px-4">Data/Hora</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody" class="divide-y divide-slate-700/50 text-slate-300">
+            <tr><td colspan="8" class="text-center py-4 text-slate-500">Carregando logs...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    let consultaTipoAtual = 'auto';
+
+    function trocarAba(aba) {
+      const btnConsulta = document.getElementById('tabBtnConsulta');
+      const btnLead = document.getElementById('tabBtnLead');
+      const secConsulta = document.getElementById('abaConsulta');
+      const secLead = document.getElementById('abaLead');
+
+      if (aba === 'consulta') {
+        btnConsulta.className = "tab-active px-4 py-2 font-semibold rounded-lg transition flex items-center gap-2";
+        btnLead.className = "text-slate-400 hover:text-white px-4 py-2 font-medium rounded-lg transition flex items-center gap-2";
+        secConsulta.classList.remove('hidden');
+        secLead.classList.add('hidden');
+      } else {
+        btnLead.className = "tab-active px-4 py-2 font-semibold rounded-lg transition flex items-center gap-2";
+        btnConsulta.className = "text-slate-400 hover:text-white px-4 py-2 font-medium rounded-lg transition flex items-center gap-2";
+        secLead.classList.remove('hidden');
+        secConsulta.classList.add('hidden');
+      }
+    }
+
+    function setConsultaTipo(tipo) {
+      consultaTipoAtual = tipo;
+      ['auto', 'nome', 'cpf', 'cnpj'].forEach(t => {
+        const btn = document.getElementById(`tipoBtn_${t}`);
+        if (t === tipo) {
+          btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition";
+        } else {
+          btn.className = "px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+        }
+      });
+
+      const input = document.getElementById('termoConsulta');
+      const icon = document.getElementById('inputIcon');
+
+      if (tipo === 'nome') {
+        input.placeholder = "Digite o nome da pessoa ou razão social (ex: Celso Fioreze)...";
+        icon.className = "ph ph-user";
+      } else if (tipo === 'cpf') {
+        input.placeholder = "Digite o CPF (000.000.000-00 ou 6 dígitos intermediários)...";
+        icon.className = "ph ph-identification-card";
+      } else if (tipo === 'cnpj') {
+        input.placeholder = "Digite o CNPJ (00.000.000/0000-00 ou 8 dígitos básicos)...";
+        icon.className = "ph ph-buildings";
+      } else {
+        input.placeholder = "Digite o Nome, CPF ou CNPJ para consulta direta...";
+        icon.className = "ph ph-magnifying-glass";
+      }
+      formatarTermo(input);
+    }
+
+    function formatarTermo(input) {
+      if (consultaTipoAtual === 'cpf') {
+        mascaraCPF(input);
+      } else if (consultaTipoAtual === 'cnpj') {
+        mascaraCNPJ(input);
+      } else if (consultaTipoAtual === 'auto') {
+        let v = input.value.replace(/\D/g, "");
+        if (v.length > 0 && /^\d+$/.test(input.value.replace(/[\.\-\/\*]/g, ""))) {
+          if (v.length <= 11) {
+            mascaraDoc(input);
+          } else {
+            mascaraDoc(input);
+          }
+        }
+      }
+    }
+
+    function mascaraCPF(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length > 11) v = v.substring(0, 11);
+      if (v.length <= 11 && v.length > 6) {
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      }
+      input.value = v;
+    }
+
+    function mascaraCNPJ(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length > 14) v = v.substring(0, 14);
+      if (v.length > 8) {
+        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        v = v.replace(/(\d{4})(\d)/, "$1-$2");
+      }
+      input.value = v;
+    }
+
+    function mascaraDoc(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+      } else {
+        v = v.substring(0, 14);
+        v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        v = v.replace(/(\d{4})(\d)/, "$1-$2");
+      }
+      input.value = v;
+    }
+
+    function preencherConsulta(tipo, valor) {
+      setConsultaTipo(tipo);
+      const input = document.getElementById('termoConsulta');
+      input.value = valor;
+      executarConsulta(new Event('submit'));
+    }
+
+    async function executarConsulta(e) {
+      if (e) e.preventDefault();
+      const termo = document.getElementById('termoConsulta').value.trim();
+      if (!termo) return;
+
+      const btn = document.getElementById('btnConsultar');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ph ph-circle-notch animate-spin text-lg"></i> Consultando...`;
+
+      const container = document.getElementById('resultadoConsulta');
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-8 text-center text-slate-400 animate-pulse">
+          <i class="ph ph-circle-notch animate-spin text-3xl text-indigo-400 mb-2"></i>
+          <p class="text-sm font-medium">Buscando em 133k registros de PEPs e 10M de sócios no DuckDB...</p>
+        </div>
+      `;
+
+      try {
+        const response = await fetch('/api/consultar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo: consultaTipoAtual, valor: termo })
+        });
+        const data = await response.json();
+        renderizarResultadoConsulta(data);
+      } catch (err) {
+        container.innerHTML = `
+          <div class="bg-rose-950/30 border border-rose-800/50 rounded-2xl p-6 text-rose-300">
+            <h3 class="font-bold flex items-center gap-2 mb-1"><i class="ph-bold ph-warning-circle text-lg"></i> Erro na Consulta</h3>
+            <p class="text-xs text-rose-200">Não foi possível comunicar com o servidor da API.</p>
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Consultar</span> <i class="ph-bold ph-arrow-right"></i>`;
+      }
+    }
+
+    function renderizarResultadoConsulta(res) {
+      const container = document.getElementById('resultadoConsulta');
+      if (res.status === 'ERRO') {
+        container.innerHTML = `
+          <div class="bg-amber-950/20 border border-amber-800/60 rounded-2xl p-6 text-left">
+            <div class="flex items-center gap-2 text-amber-400 font-bold mb-1">
+              <i class="ph-bold ph-warning text-xl"></i>
+              <span>Parâmetro Inválido</span>
+            </div>
+            <p class="text-xs text-slate-300">${res.mensagem}</p>
+          </div>
+        `;
+        return;
+      }
+
+      const isPositivo = res.risco === 'POSITIVO';
+      const borderClass = isPositivo ? 'border-rose-500/40 bg-rose-950/10' : 'border-emerald-500/40 bg-emerald-950/10';
+      const badgeClass = isPositivo ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      const badgeText = isPositivo ? 'ALERTA: APONTAMENTO PEP DETECTADO' : 'REGULAR: FICHA LIMPA';
+
+      let htmlPeps = '';
+      if (res.peps && res.peps.length > 0) {
+        htmlPeps = `
+          <div class="space-y-3 mt-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i class="ph-bold ph-user-circle text-indigo-400"></i> Registros de PEP Encontrados (${res.peps.length})
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              ${res.peps.map(p => `
+                <div class="bg-slate-800/70 border border-slate-700 rounded-xl p-4 space-y-2 text-xs">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <span class="font-bold text-white text-sm block">${p.nome_pep}</span>
+                      <span class="font-mono text-[11px] text-slate-400">${p.cpf_mascarado}</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 font-semibold text-[10px]">
+                      ${p.sigla_funcao || 'PEP'}
+                    </span>
+                  </div>
+
+                  <div class="pt-1 border-t border-slate-700/60 space-y-1 text-slate-300">
+                    <div><span class="text-slate-500">Cargo/Função:</span> <strong class="text-slate-200">${p.descricao_funcao}</strong></div>
+                    <div><span class="text-slate-500">Órgão:</span> ${p.nome_orgao || 'Não informado'}</div>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-400">
+                      <span>Exercício: ${p.data_inicio_exercicio || '?'} a ${p.data_fim_exercicio || 'atual'}</span>
+                    </div>
+                  </div>
+
+                  ${p.vinculos && p.vinculos.length > 0 ? `
+                    <div class="mt-2 pt-2 border-t border-slate-700/60">
+                      <span class="text-[11px] font-semibold text-amber-300 flex items-center gap-1">
+                        <i class="ph-bold ph-buildings"></i> Vínculos em Empresas (QSA):
+                      </span>
+                      <ul class="mt-1 space-y-1 text-[11px] text-slate-300">
+                        ${p.vinculos.map(v => `
+                          <li class="bg-slate-900/60 px-2 py-1 rounded border border-slate-800">
+                            <strong>${v.razao_social}</strong>
+                            <div class="text-[10px] text-slate-400 font-mono">CNPJ: ${v.cnpj_basico} | ${v.qualificacao_desc}</div>
+                          </li>
+                        `).join('')}
+                      </ul>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      let htmlVinculosAvulsos = '';
+      if (res.vinculos && res.vinculos.length > 0 && (!res.peps || res.peps.length === 0)) {
+        htmlVinculosAvulsos = `
+          <div class="mt-4 space-y-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Vínculos Societários Detectados</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              ${res.vinculos.map(v => `
+                <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                  <div class="font-semibold text-white">${v.razao_social}</div>
+                  <div class="text-slate-400 text-[11px]">CNPJ Básico: ${v.cnpj_basico} | ${v.qualificacao_desc}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      let htmlEmpresa = '';
+      if (res.empresa) {
+        htmlEmpresa = `
+          <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 mt-4 text-xs space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase text-slate-400 flex items-center gap-1.5">
+                <i class="ph-bold ph-buildings text-indigo-400"></i> Informações Cadastrais da Empresa
+              </span>
+              <span class="font-mono text-slate-400">CNPJ Básico: ${res.empresa.cnpj_basico}</span>
+            </div>
+            <div class="text-base font-bold text-white">${res.empresa.razao_social}</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300 pt-1">
+              <div><span class="text-slate-500">Porte:</span> ${res.empresa.porte || 'N/A'}</div>
+              <div><span class="text-slate-500">Nat. Jurídica:</span> ${res.empresa.natureza_juridica || 'N/A'}</div>
+              <div><span class="text-slate-500">Capital Social:</span> R$ ${res.empresa.capital_social || 'N/A'}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      let htmlSociosPep = '';
+      if (res.socios_pep && res.socios_pep.length > 0) {
+        htmlSociosPep = `
+          <div class="mt-4 space-y-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-warning-octagon text-rose-400"></i> Sócios PEP Identificados no QSA (${res.socios_pep.length})
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              ${res.socios_pep.map(s => `
+                <div class="bg-rose-950/20 border border-rose-800/60 rounded-xl p-4 space-y-1.5 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-white text-sm">${s.nome_socio}</span>
+                    <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-semibold text-[10px]">SÓCIO PEP</span>
+                  </div>
+                  <div class="text-slate-300">
+                    <span class="text-slate-400">Qualificação:</span> <strong>${s.qualificacao_desc}</strong>
+                  </div>
+                  <div class="text-slate-300">
+                    <span class="text-slate-400">Cargo Público:</span> <strong class="text-rose-200">${s.descricao_funcao}</strong> (${s.orgao || 'N/I'})
+                  </div>
+                  <div class="text-[11px] text-slate-400 font-mono">
+                    Mandato: ${s.inicio_exercicio || '?'} a ${s.fim_exercicio || 'atual'} | CPF: ${s.pep_cpf}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      let htmlQsa = '';
+      if (res.qsa && res.qsa.length > 0) {
+        htmlQsa = `
+          <div class="mt-4 pt-3 border-t border-slate-700/60">
+            <h4 class="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
+              <i class="ph-bold ph-users text-slate-400"></i> Quadro Societário Completo (QSA) - ${res.qsa.length} sócio(s)
+            </h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="text-slate-500 border-b border-slate-800">
+                    <th class="py-2 px-3">Nome do Sócio</th>
+                    <th class="py-2 px-3">Qualificação</th>
+                    <th class="py-2 px-3">Documento</th>
+                    <th class="py-2 px-3">Status PEP</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                  ${res.qsa.map(s => `
+                    <tr class="${s.is_pep ? 'bg-rose-950/20 text-rose-200 font-semibold' : 'text-slate-300'}">
+                      <td class="py-2 px-3">${s.nome}</td>
+                      <td class="py-2 px-3 text-slate-400">${s.qualificacao_desc}</td>
+                      <td class="py-2 px-3 font-mono text-slate-400">${s.documento_mascarado || 'N/A'}</td>
+                      <td class="py-2 px-3">
+                        ${s.is_pep ? '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold">PEP DETECTADO</span>' : '<span class="text-emerald-400 text-[11px] flex items-center gap-1"><i class="ph ph-check-circle"></i> Regular</span>'}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      let htmlEmpresasComPep = '';
+      if (res.empresas_com_pep && res.empresas_com_pep.length > 0) {
+        htmlEmpresasComPep = `
+          <div class="mt-4 space-y-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <i class="ph-bold ph-buildings text-amber-400"></i> Empresas com Sócio PEP Associadas ao Nome (${res.empresas_com_pep.length})
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              ${res.empresas_com_pep.map(e => `
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 text-xs space-y-1">
+                  <div class="font-bold text-white text-sm">${e.razao_social}</div>
+                  <div class="text-[11px] text-slate-400 font-mono">CNPJ Básico: ${e.cnpj_basico}</div>
+                  <div class="text-slate-300 pt-1">
+                    <span class="text-slate-400">Sócio PEP:</span> <strong>${e.nome_socio_pep}</strong> (${e.cargo_pep})
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="border ${borderClass} rounded-2xl p-6 shadow-2xl backdrop-blur transition-all space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+            <div class="flex items-center gap-3">
+              <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">
+                ${badgeText}
+              </span>
+              <span class="text-xs font-mono text-slate-400">
+                Tipo: <strong class="text-white">${res.tipo_consulta}</strong> | Busca: "<strong class="text-indigo-300">${res.termo_buscado}</strong>"
+              </span>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+              <span class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700">
+                ⚡ ${res.tempo_ms} ms (DuckDB OLAP)
+              </span>
+            </div>
+          </div>
+
+          <div class="text-sm ${isPositivo ? 'text-rose-200' : 'text-emerald-300'} font-medium">
+            ${res.mensagem}
+          </div>
+
+          ${res.aviso ? `
+            <div class="bg-amber-950/20 border border-amber-800/40 rounded-xl p-3 text-xs text-amber-300 flex items-center gap-2">
+              <i class="ph-bold ph-info text-base"></i>
+              <span>${res.aviso}</span>
+            </div>
+          ` : ''}
+
+          ${htmlEmpresa}
+          ${htmlSociosPep}
+          ${htmlPeps}
+          ${htmlEmpresasComPep}
+          ${htmlVinculosAvulsos}
+          ${htmlQsa}
+
+        </div>
+      `;
+    }
+
+    function preencherCenarioLead(tipo) {
+      if (tipo === 'limpo') {
+        document.getElementById('nome').value = 'Tech Partners Consultoria Ltda';
+        document.getElementById('documento').value = '55.107.392/0001-00';
+        document.getElementById('email').value = 'comercial@techpartners.com.br';
+        document.getElementById('valor').value = '95000';
+      } else {
+        document.getElementById('nome').value = 'Celso Fioreze Negócios Imobiliários';
+        document.getElementById('documento').value = '64.085.296/0001-00';
+        document.getElementById('email').value = 'juridico@fioreze.com.br';
+        document.getElementById('valor').value = '450000';
+      }
+    }
+
+    async function enviarLead(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btnSubmitLead');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="ph ph-circle-notch animate-spin"></i> Processando Lead...`;
+
+      const payload = {
+        nome: document.getElementById('nome').value,
+        documento: document.getElementById('documento').value,
+        email: document.getElementById('email').value,
+        valor: parseFloat(document.getElementById('valor').value) || 0.0
+      };
+
+      try {
+        const response = await fetch('/api/processar-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        exibirResultadoLead(data);
+        carregarLeads();
+      } catch (err) {
+        alert("Erro na conexão com a API.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Disparar Análise Regulatória</span> <i class="ph-bold ph-arrow-right"></i>`;
+      }
+    }
+
+    function exibirResultadoLead(res) {
+      const card = document.getElementById('statusCardLead');
+      if (res.status === 'ERRO') {
+        card.className = "bg-amber-950/20 border border-amber-800/60 rounded-2xl p-6 text-left";
+        card.innerHTML = `
+          <div class="flex items-center gap-3 text-amber-400 font-semibold mb-2">
+            <i class="ph-bold ph-warning text-xl"></i>
+            <span>Falha de Validação Cadastral</span>
+          </div>
+          <p class="text-xs text-slate-300">${res.mensagem}</p>
+        `;
+        return;
+      }
+
+      if (res.risco === 'NEGATIVO') {
+        card.className = "bg-emerald-950/20 border border-emerald-500/40 rounded-2xl p-6 text-left space-y-3";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              RISCO NEGATIVO (FICHA LIMPA)
+            </span>
+            <span class="text-xs text-slate-400">ID #${res.lead_id}</span>
+          </div>
+          <h3 class="text-base font-bold text-white">Lead Qualificado para Abordagem Comercial</h3>
+          <p class="text-xs text-slate-300">${res.detalhes}</p>
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 text-xs space-y-1 font-mono text-slate-400">
+            <div>Encaminhado: <span class="text-emerald-400">${res.destino}</span></div>
+            <div>Motor: DuckDB OLAP Matcher (< 20ms)</div>
+          </div>
+        `;
+      } else {
+        card.className = "bg-rose-950/20 border border-rose-500/40 rounded-2xl p-6 text-left space-y-3";
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              ALERTA: MATCH REGULATÓRIO
+            </span>
+            <span class="text-xs text-slate-400">ID #${res.lead_id}</span>
+          </div>
+          <h3 class="text-base font-bold text-rose-300">Proposta Retida para Análise Jurídica</h3>
+          <p class="text-xs text-slate-300">Identificado vínculo ou sócio com exposição regulatória. A esteira bloqueou o lead preventivamente.</p>
+          <div class="bg-rose-950/40 border border-rose-800/40 rounded-xl p-3 text-xs space-y-1">
+            <span class="font-semibold text-rose-300 block">Dossiê:</span>
+            <span class="text-slate-200">${res.detalhes}</span>
+          </div>
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 text-xs space-y-1 font-mono text-slate-400">
+            <div>Encaminhado: <span class="text-rose-400">${res.destino}</span></div>
+            <div>Status: Bloqueado preventivamente</div>
+          </div>
+        `;
+      }
+    }
+
+    async function carregarLeads() {
+      try {
+        const response = await fetch('/api/leads');
+        const leads = await response.json();
+        const tbody = document.getElementById('auditTableBody');
+        if (!leads || leads.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-500">Nenhum log gravado ainda.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = leads.map(l => `
+          <tr class="hover:bg-slate-800/30 transition">
+            <td class="py-3 px-4 font-mono text-slate-500">#${l[0]}</td>
+            <td class="py-3 px-4 font-medium text-white">${l[1]}</td>
+            <td class="py-3 px-4 text-slate-400"><span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-mono border border-slate-700">${l[2]}</span></td>
+            <td class="py-3 px-4 font-mono text-slate-400">${l[3]}</td>
+            <td class="py-3 px-4">R$ ${Number(l[5] || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${l[6] === 'NEGATIVO' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                ${l[6]}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-slate-400 text-[11px]">${l[8]}</td>
+            <td class="py-3 px-4 text-slate-500 text-[11px] font-mono">${l[9] || ''}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error("Erro ao carregar logs", e);
+      }
+    }
+
+    window.onload = () => {
+      carregarLeads();
+      setConsultaTipo('auto');
+    };
+  </script>
+</body>
+</html>

@@ -3,3 +3,5 @@ uvicorn>=0.28.0
 pydantic>=2.6.0
 validate-docbr>=0.1.2
 duckdb>=0.10.0
+mailtrap>=2.0.0
+python-dotenv>=1.0.0
